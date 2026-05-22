@@ -1,15 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Navbar } from '@/components/navbar'
 import { WaitlistModal } from '@/components/waitlist-modal'
-
-const FlickeringGrid = dynamic(
-  () => import('@/components/flickering-grid').then((m) => m.FlickeringGrid),
-  { ssr: false }
-)
 
 function PaperPlaneIcon() {
   return (
@@ -28,11 +22,28 @@ const FAQS = [
   { q: 'Can I still make changes manually?', a: 'Yes. Avora gives you full visibility and control. You can override any AI decision, adjust budgets manually, or pause automation at any time.' },
 ]
 
+const PROMPT_EXAMPLES = [
+  'scaling my best-performing ad set',
+  'a new launch campaign for spring',
+  'lowering my cost per purchase',
+  'retargeting last month’s visitors',
+  'fresh creative for a tired audience',
+]
+
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false)
   const [openFaq,   setOpenFaq]   = useState<number | null>(null)
+  const [exampleIdx, setExampleIdx] = useState(0)
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
+
+  // Continuously cycle the example prompts.
+  useEffect(() => {
+    const t = setInterval(() => {
+      setExampleIdx((i) => (i + 1) % PROMPT_EXAMPLES.length)
+    }, 2600)
+    return () => clearInterval(t)
+  }, [])
 
   const heroRef = useRef<HTMLElement>(null)
   const [pulses, setPulses] = useState<Array<{ id: number; x: number; y: number }>>([])
@@ -49,34 +60,23 @@ export default function Home() {
 
   return (
     <>
-      {/* Site-wide flickering grid — fixed behind every section */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <FlickeringGrid
-          squareSize={3}
-          gridGap={7}
-          flickerChance={0.45}
-          color="rgb(255,255,255)"
-          maxOpacity={0.32}
-        />
-      </div>
-
       <Navbar onOpenModal={() => setModalOpen(true)} />
 
       <main>
         {/* ── Hero ── */}
         <section
           ref={heroRef}
-          className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-28 pb-24 text-center overflow-hidden"
+          className="relative flex min-h-screen flex-col items-center justify-center px-6 pb-24 pt-[14vh] text-center overflow-hidden"
         >
           {pulses.map(pulse => (
             <div key={pulse.id}>
               <motion.div className="pointer-events-none absolute rounded-full"
-                style={{ left: pulse.x, top: pulse.y, x: '-50%', y: '-50%', border: '1.5px solid rgba(249,115,22,0.55)' }}
+                style={{ left: pulse.x, top: pulse.y, x: '-50%', y: '-50%', border: '1.5px solid rgba(0,89,255,0.55)' }}
                 initial={{ width: 10, height: 10, opacity: 1 }}
                 animate={{ width: 340, height: 340, opacity: 0 }}
                 transition={{ duration: 1.1, ease: [0.12, 0.8, 0.3, 1] }} />
               <motion.div className="pointer-events-none absolute rounded-full"
-                style={{ left: pulse.x, top: pulse.y, x: '-50%', y: '-50%', border: '1px solid rgba(249,115,22,0.28)' }}
+                style={{ left: pulse.x, top: pulse.y, x: '-50%', y: '-50%', border: '1px solid rgba(0,89,255,0.28)' }}
                 initial={{ width: 10, height: 10, opacity: 1 }}
                 animate={{ width: 210, height: 210, opacity: 0 }}
                 transition={{ duration: 0.85, ease: [0.12, 0.8, 0.3, 1], delay: 0.1 }} />
@@ -91,11 +91,11 @@ export default function Home() {
             }}
             className="text-5xl md:text-7xl leading-[1.1] max-w-3xl"
           >
-            Meta ads that run<br />on{' '}
+            Your growth, on{' '}
             <em
               style={{
                 fontStyle: 'italic',
-                background: 'linear-gradient(to bottom, #fb923c 0%, #f97316 100%)',
+                background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -106,13 +106,63 @@ export default function Home() {
             </em>
           </h1>
 
+          {/* Subheading */}
+          <p
+            className="mt-7 max-w-xl text-[16px] md:text-[17px] leading-relaxed"
+            style={{ color: 'var(--av-text-2)', fontFamily: 'var(--font-inter)' }}
+          >
+            Introducing the agentic growth engine for ecommerce brands. Avora
+            plans, creates and launches on-brand Meta ads autonomously.
+          </p>
+
+          {/* Prompt input */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); setModalOpen(true) }}
+            className="mt-10 flex w-full max-w-xl items-center gap-3 rounded-[16px] px-5 py-3.5"
+            style={{
+              background: 'var(--av-input-bg)',
+              border: '1px solid var(--av-accent)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            {/* Non-editable display — only the buttons are interactive */}
+            <div
+              className="flex flex-1 items-center gap-1.5 overflow-hidden text-left text-[15px] select-none"
+              style={{ fontFamily: 'var(--font-inter)', color: 'var(--av-text-1)' }}
+            >
+              Iterate on{' '}
+              <span className="relative inline-block flex-1 overflow-hidden align-middle">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={exampleIdx}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.32, ease: 'easeOut' }}
+                    className="block whitespace-nowrap"
+                    style={{ color: 'var(--av-text-2)' }}
+                  >
+                    {PROMPT_EXAMPLES[exampleIdx]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+            </div>
+            <button
+              type="submit"
+              aria-label="Submit prompt"
+              className="btn-cta inline-flex size-9 flex-shrink-0 items-center justify-center rounded-full"
+            >
+              <PaperPlaneIcon />
+            </button>
+          </form>
+
+          {/* Primary CTA */}
           <button
             onClick={firePulse}
             style={{ fontFamily: 'var(--font-albert-sans)' }}
-            className="btn-cta mt-12 inline-flex items-center gap-2.5 rounded-[11px] px-7 py-3.5 text-[16px] font-medium"
+            className="btn-cta mt-9 inline-flex items-center justify-center rounded-full px-12 py-4 text-[16px] font-medium"
           >
-            Join waitlist
-            <PaperPlaneIcon />
+            Get Started
           </button>
 
         </section>

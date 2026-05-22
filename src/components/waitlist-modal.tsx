@@ -10,9 +10,13 @@ interface WaitlistModalProps {
   onClose: () => void
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
@@ -25,8 +29,35 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   }, [open, onClose])
 
   useEffect(() => {
-    if (open) { setEmail(''); setSubmitted(false) }
+    if (open) { setEmail(''); setSubmitted(false); setSubmitting(false); setError(null) }
   }, [open])
+
+  const submit = async () => {
+    const value = email.trim()
+    if (!EMAIL_RE.test(value)) {
+      setError('Please enter a valid email address.')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: value }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setError(data?.error ?? 'Something went wrong. Please try again.')
+        return
+      }
+      setSubmitted(true)
+    } catch {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (!mounted) return null
 
@@ -91,31 +122,46 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && email && setSubmitted(true)}
+                    onChange={(e) => { setEmail(e.target.value); if (error) setError(null) }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !submitting) submit() }}
                     placeholder="you@example.com"
-                    className="mt-5 w-full rounded-xl border px-4 py-2.5 text-[13px] outline-none transition-colors duration-200 focus:ring-1 focus:ring-[#f97316]/30 focus:border-[#f97316]/50"
+                    disabled={submitting}
+                    className="mt-5 w-full rounded-xl border px-4 py-2.5 text-[13px] outline-none transition-colors duration-200 focus:ring-1 focus:ring-[#0059FF]/30 focus:border-[#0059FF]/50 disabled:opacity-60"
                     style={{
                       backgroundColor: 'var(--av-input-bg)',
-                      borderColor: 'var(--av-input-border)',
+                      borderColor: error ? 'rgba(239,68,68,0.6)' : 'var(--av-input-border)',
                       color: 'var(--av-text-1)',
                     }}
                   />
 
+                  <AnimatePresence>
+                    {error && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-2 text-[12px]"
+                        style={{ color: '#ef4444' }}
+                      >
+                        {error}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+
                   <motion.button
-                    whileHover={{ scale: 1.02, filter: 'brightness(1.06)' }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => email && setSubmitted(true)}
-                    disabled={!email}
+                    whileHover={submitting ? undefined : { scale: 1.02, filter: 'brightness(1.06)' }}
+                    whileTap={submitting ? undefined : { scale: 0.97 }}
+                    onClick={() => { if (!submitting) submit() }}
+                    disabled={!email || submitting}
                     className="mt-3 w-full rounded-2xl py-3 text-[13px] font-semibold text-white disabled:opacity-40 transition-[filter] duration-150"
                     style={{
                       fontFamily: 'var(--font-albert-sans)',
-                      background: 'linear-gradient(to bottom, #fb923c 0%, #f97316 100%)',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.32), 0 4px 18px rgba(249,115,22,0.42)',
+                      background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.32), 0 4px 18px rgba(0,89,255,0.42)',
                       border: '1px solid rgba(0,0,0,0.12)',
                     }}
                   >
-                    Notify me
+                    {submitting ? 'Joining…' : 'Notify me'}
                   </motion.button>
 
                   <p style={{ color: 'var(--av-text-2)' }} className="mt-3 text-center text-[11px]">
@@ -128,7 +174,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex flex-col items-center py-4 text-center"
                 >
-                  <div className="mb-4 flex size-10 items-center justify-center rounded-full" style={{ background: 'rgba(249,115,22,0.18)' }}>
+                  <div className="mb-4 flex size-10 items-center justify-center rounded-full" style={{ background: 'rgba(0,89,255,0.18)' }}>
                     <span className="text-lg">✦</span>
                   </div>
                   <h2 style={{ fontFamily: 'var(--font-syne)', color: 'var(--av-text-1)' }} className="text-[16px] font-bold">

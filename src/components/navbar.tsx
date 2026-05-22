@@ -43,18 +43,17 @@ export function Navbar({ onOpenModal }: NavbarProps) {
       className="fixed top-0 inset-x-0 z-50"
     >
       <div
-        className="transition-all duration-300 pt-3"
+        className="transition-all duration-300 pt-5"
         style={scrolled ? {
-          backgroundColor: 'rgba(22,22,22,0.45)',
+          backgroundColor: 'rgba(22,22,22,0.55)',
           backdropFilter: 'blur(24px) saturate(180%)',
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
         } : {}}
       >
         <nav
           className={cn(
             'relative mx-auto flex max-w-7xl items-center justify-between transition-all duration-300 px-10',
-            scrolled ? 'h-[52px]' : 'h-[44px]'
+            scrolled ? 'h-[56px]' : 'h-[52px]'
           )}
         >
           {/* Wordmark */}
@@ -81,7 +80,7 @@ export function Navbar({ onOpenModal }: NavbarProps) {
                       <span
                         className="rounded-full px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide leading-none"
                         style={{
-                          background: 'linear-gradient(to bottom, #fb923c 0%, #f97316 100%)',
+                          background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
                           color: '#fff',
                         }}
                       >
@@ -168,7 +167,7 @@ export function Navbar({ onOpenModal }: NavbarProps) {
                         <span
                           className="rounded-full px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide leading-none"
                           style={{
-                            background: 'linear-gradient(to bottom, #fb923c 0%, #f97316 100%)',
+                            background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
                             color: '#fff',
                           }}
                         >

@@ -11,7 +11,7 @@ const fadeUp = {
 
 function ConnectVisual() {
   const platforms = [
-    { name: 'Meta Ads',    color: '#f97316', connected: true  },
+    { name: 'Meta Ads',    color: '#0059FF', connected: true  },
     { name: 'Google Ads',  color: '#4285F4', connected: false },
     { name: 'TikTok Ads',  color: '#69C9D0', connected: false },
   ]
@@ -38,9 +38,9 @@ function ConnectVisual() {
           )}
         </div>
       ))}
-      <div className="mt-4 rounded-xl px-4 py-3 flex items-center gap-2" style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.18)' }}>
-        <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#f97316', boxShadow: '0 0 6px #f97316' }} />
-        <span className="text-[11px]" style={{ color: '#f97316' }}>Meta account synced — 3 ad accounts found</span>
+      <div className="mt-4 rounded-xl px-4 py-3 flex items-center gap-2" style={{ background: 'rgba(0,89,255,0.08)', border: '1px solid rgba(0,89,255,0.18)' }}>
+        <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#0059FF', boxShadow: '0 0 6px #0059FF' }} />
+        <span className="text-[11px]" style={{ color: '#0059FF' }}>Meta account synced — 3 ad accounts found</span>
       </div>
     </div>
   )
@@ -55,7 +55,7 @@ function BriefVisual() {
         <div className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>
           Premium yoga gear for women who take their practice seriously. We want conversions from cold audiences.
         </div>
-        <div className="w-0.5 h-4 mt-1 inline-block animate-pulse rounded-full" style={{ background: '#f97316' }} />
+        <div className="w-0.5 h-4 mt-1 inline-block animate-pulse rounded-full" style={{ background: '#0059FF' }} />
       </div>
       <div className="grid grid-cols-2 gap-2">
         {[
@@ -84,7 +84,7 @@ function GenerateVisual() {
     <div className="rounded-2xl p-6" style={{ background: 'rgb(18,18,20)', border: '1px solid rgba(255,255,255,0.08)' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="text-[10px] tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>Generated Ads</div>
-        <div className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(249,115,22,0.12)', color: '#f97316', border: '1px solid rgba(249,115,22,0.22)' }}>✦ AI</div>
+        <div className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,89,255,0.12)', color: '#0059FF', border: '1px solid rgba(0,89,255,0.22)' }}>✦ AI</div>
       </div>
       <div className="space-y-2">
         {ads.map((ad, i) => (
@@ -114,12 +114,12 @@ function ScaleVisual() {
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ marginBottom: 16 }}>
         <defs>
           <linearGradient id="lg-scale" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f97316" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            <stop offset="0%" stopColor="#0059FF" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#0059FF" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={`M ${pts} L ${(points.length-1)*22+11},${H} L 11,${H} Z`} fill="url(#lg-scale)" />
-        <polyline points={pts} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points={pts} fill="none" stroke="#0059FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div className="grid grid-cols-3 gap-2">
         {[
@@ -183,7 +183,7 @@ export function HowItWorks() {
         viewport={{ once: true, margin: '-80px' }}
         className="text-center mb-24"
       >
-        <p className="text-[11px] tracking-[0.18em] uppercase mb-4" style={{ color: '#f97316' }}>How it works</p>
+        <p className="text-[11px] tracking-[0.18em] uppercase mb-4" style={{ color: '#0059FF' }}>How it works</p>
         <h2
           className="text-4xl md:text-5xl font-normal leading-tight"
           style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic', color: 'var(--av-text-1)' }}
