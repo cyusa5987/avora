@@ -156,7 +156,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                     className="mt-3 w-full rounded-2xl py-3 text-[13px] font-semibold text-white disabled:opacity-40 transition-[filter] duration-150"
                     style={{
                       fontFamily: 'var(--font-albert-sans)',
-                      background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
+                      background: 'linear-gradient(to bottom, #0059FF 0%, #0059FF 100%)',
                       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.32), 0 4px 18px rgba(0,89,255,0.42)',
                       border: '1px solid rgba(0,0,0,0.12)',
                     }}

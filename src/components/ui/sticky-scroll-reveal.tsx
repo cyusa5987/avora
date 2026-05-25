@@ -38,10 +38,10 @@ export const StickyScroll = ({
   });
 
   const accentGradients = [
-    "linear-gradient(135deg, #0059FF 0%, #0046CC 100%)",
-    "linear-gradient(135deg, #3D7DFF 0%, #0059FF 100%)",
-    "linear-gradient(135deg, #0046CC 0%, #0039A6 100%)",
-    "linear-gradient(135deg, #0059FF 0%, #3D7DFF 100%)",
+    "linear-gradient(135deg, #0059FF 0%, #0059FF 100%)",
+    "linear-gradient(135deg, #0059FF 0%, #0059FF 100%)",
+    "linear-gradient(135deg, #0059FF 0%, #0059FF 100%)",
+    "linear-gradient(135deg, #0059FF 0%, #0059FF 100%)",
   ];
 
   const [panelGradient, setPanelGradient] = useState(accentGradients[0]);

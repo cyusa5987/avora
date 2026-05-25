@@ -10,16 +10,14 @@ const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
 })
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
-
-  useEffect(() => {
-    const stored = localStorage.getItem('avora-theme') as Theme | null
-    if (stored === 'light' || stored === 'dark') setTheme(stored)
-  }, [])
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof document === 'undefined') return 'dark'
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  })
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
-    localStorage.setItem('avora-theme', theme)
+    try { localStorage.setItem('avora-theme', theme) } catch {}
   }, [theme])
 
   return (

@@ -49,18 +49,18 @@
 }
 
 :root {
-  /* Avora semantic tokens — light mode (orange + grey) */
-  --av-bg:           #161616;
-  --av-text-1:       #18181b;
-  --av-text-2:       #71717a;
-  --av-wordmark:     #18181b;
-  --av-nav-link:     #71717a;
+  /* Avora semantic tokens — light mode */
+  --av-bg:           #F7F7F6;
+  --av-text-1:       #111111;
+  --av-text-2:       #888888;
+  --av-wordmark:     #969492;
+  --av-nav-link:     #969492;
   --av-border:       rgba(0,0,0,0.08);
   --av-surface:      #ffffff;
   --av-card:         rgba(0,0,0,0.05);
   --av-tile:         rgba(255,255,255,0.92);
   --av-subtle:       rgba(0,0,0,0.03);
-  --av-nav-fill:     rgba(22,22,22,0.94);
+  --av-nav-fill:     rgba(247,247,246,0.94);
   --av-nav-border:   rgba(0,0,0,0.07);
   --av-accent:       #0059FF;
   --av-secondary:    #0059FF;
@@ -121,7 +121,7 @@
   --av-btn-border:   rgba(255,255,255,0.13);
   --av-input-bg:     rgba(255,255,255,0.04);
   --av-input-border: rgba(255,255,255,0.10);
-  --av-accent:       #5B8DFF;
+  --av-accent:       #0059FF;
   --av-secondary:    #0059FF;
 
   --background: oklch(0.145 0 0);
@@ -163,14 +163,9 @@
   }
   body {
     background-color: var(--av-bg);
-    background-image:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,89,255,0.06) 0%, transparent 60%);
     background-attachment: fixed;
     transition: background-color 0.3s ease;
     color: var(--av-text-1);
-  }
-  .dark body {
-    background-image: none;
   }
   html {
     @apply font-sans;
@@ -178,16 +173,16 @@
 }
 
 ::selection {
-  background: #ffffff;
-  color: #0A0908;
+  background: #111111;
+  color: #ffffff;
 }
 ::-moz-selection {
-  background: #ffffff;
-  color: #0A0908;
+  background: #111111;
+  color: #ffffff;
 }
 
 .btn-cta {
-  background: linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%);
+  background: linear-gradient(to bottom, #0059FF 0%, #0059FF 100%);
   border: 1px solid rgba(0,0,0,0.18);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.28),
@@ -198,4 +193,34 @@
 
 .btn-cta:hover {
   filter: brightness(1.05);
+}
+
+/* Glossy blue CTA — vibrant gradient with a soft blue glow */
+.btn-blue {
+  background: linear-gradient(180deg, #5b8cff 0%, #2f6bff 48%, #0e54f5 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.18),
+    0 10px 28px rgba(0, 89, 255, 0.45);
+  color: #fff;
+  transition: filter 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.btn-blue:hover {
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.18),
+    0 12px 34px rgba(0, 89, 255, 0.6);
+}
+
+@layer utilities {
+  @keyframes shine {
+    0% { background-position: 100%; }
+    100% { background-position: -100%; }
+  }
+  .animate-shine {
+    animation: shine 5s linear infinite;
+  }
 }

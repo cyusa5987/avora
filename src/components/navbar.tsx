@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LiquidButton } from '@/components/ui/liquid-glass-button'
+import { useTheme } from '@/lib/theme-context'
 
 function PaperPlaneIcon() {
   return (
@@ -15,9 +17,25 @@ function PaperPlaneIcon() {
   )
 }
 
+function AvoraLogoMark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
+      <rect width="26" height="26" rx="7" fill="#969492" />
+      <path
+        d="M7.5 19.5L13 8L18.5 19.5"
+        stroke="white"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line x1="9.8" y1="16" x2="16.2" y2="16" stroke="white" strokeWidth="2.1" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 const NAV_LINKS = [
   { label: 'Features', href: '#features' },
-  { label: 'Pricing', href: null },
+  { label: 'Pricing', href: '#pricing' },
   { label: 'MCP', href: '#mcp' },
 ]
 
@@ -28,12 +46,24 @@ interface NavbarProps {
 export function Navbar({ onOpenModal }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { theme } = useTheme()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Smooth-scroll for in-page hash links (Lenis-friendly).
+  const handleHashClick = (href: string) => (e: React.MouseEvent) => {
+    if (!href.startsWith('#')) return
+    const id = href.slice(1)
+    const el = typeof document !== 'undefined' ? document.getElementById(id) : null
+    if (!el) return
+    e.preventDefault()
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (mobileOpen) setMobileOpen(false)
+  }
 
   return (
     <motion.header
@@ -42,27 +72,41 @@ export function Navbar({ onOpenModal }: NavbarProps) {
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 inset-x-0 z-50"
     >
-      <div
-        className="transition-all duration-300 pt-5"
-        style={scrolled ? {
-          backgroundColor: 'rgba(22,22,22,0.55)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        } : {}}
-      >
+      <div className="relative transition-all duration-300">
+        {/* Blur layer sits behind the nav content and fades out at the bottom
+            so the navbar blends seamlessly into the page — no fill, no hard edge. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 transition-opacity duration-300"
+          style={{
+            bottom: '-2px',
+            opacity: scrolled ? 1 : 0,
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            maskImage:
+              'linear-gradient(to bottom, black 0%, black 92%, transparent 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to bottom, black 0%, black 92%, transparent 100%)',
+          }}
+        />
         <nav
           className={cn(
-            'relative mx-auto flex max-w-7xl items-center justify-between transition-all duration-300 px-10',
-            scrolled ? 'h-[56px]' : 'h-[52px]'
+            'relative mx-auto flex max-w-7xl items-center justify-between transition-all duration-300 px-6',
+            scrolled ? 'h-[48px]' : 'h-[48px]'
           )}
         >
-          {/* Wordmark */}
+          {/* Logo */}
           <Link
             href="/"
-            style={{ fontFamily: 'var(--font-syne)', color: 'var(--av-wordmark)' }}
-            className="ml-24 text-[16px] font-bold tracking-tight rounded-[8px] px-2.5 py-1 transition-all duration-200 hover:bg-white/[0.10] hover:text-white"
+            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            className="px-1 py-1 transition-opacity duration-200 hover:opacity-75"
           >
-            avora
+            <span
+              className="text-[15px] font-bold tracking-tight"
+              style={{ fontFamily: 'var(--font-syne)', color: 'var(--av-wordmark)' }}
+            >
+              avora
+            </span>
           </Link>
 
           {/* Desktop nav links — absolutely centred */}
@@ -72,26 +116,16 @@ export function Navbar({ onOpenModal }: NavbarProps) {
                 {link.href ? (
                   <Link
                     href={link.href}
+                    onClick={handleHashClick(link.href)}
                     style={{ color: 'var(--av-nav-link)' }}
-                    className="inline-flex items-center gap-1.5 text-[13.5px] font-normal rounded-[8px] px-3 py-1 transition-all duration-200 hover:bg-white/[0.10] hover:text-white"
+                    className="inline-flex items-center gap-1.5 text-[13.5px] font-normal px-1 py-1 transition-all duration-200 hover:font-semibold"
                   >
                     {link.label}
-                    {link.label === 'MCP' && (
-                      <span
-                        className="rounded-full px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide leading-none"
-                        style={{
-                          background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
-                          color: '#fff',
-                        }}
-                      >
-                        new
-                      </span>
-                    )}
                   </Link>
                 ) : (
                   <span
                     style={{ color: 'var(--av-nav-link)', cursor: 'pointer' }}
-                    className="inline-flex items-center gap-1.5 text-[13.5px] font-normal rounded-[8px] px-3 py-1 transition-all duration-200 hover:bg-white/[0.10] hover:text-white"
+                    className="inline-flex items-center gap-1.5 text-[13.5px] font-normal px-1 py-1 transition-all duration-200 hover:font-semibold"
                   >
                     {link.label}
                   </span>
@@ -102,15 +136,14 @@ export function Navbar({ onOpenModal }: NavbarProps) {
 
           {/* Right: CTA + mobile toggle */}
           <div className="flex items-center gap-3">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+            <LiquidButton
               onClick={onOpenModal}
-              className="btn-cta hidden md:inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-1.5 text-[12.5px] font-medium"
+              size="sm"
+              className="hidden md:inline-flex"
+              style={{ color: 'var(--av-text-1)' }}
             >
               Join waitlist
-              <PaperPlaneIcon />
-            </motion.button>
+            </LiquidButton>
 
             {/* Mobile hamburger */}
             <motion.button
@@ -158,22 +191,11 @@ export function Navbar({ onOpenModal }: NavbarProps) {
                   {link.href ? (
                     <Link
                       href={link.href}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={handleHashClick(link.href)}
                       style={{ color: 'var(--av-nav-link)' }}
                       className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-normal transition-opacity duration-150 hover:opacity-80"
                     >
                       {link.label}
-                      {link.label === 'MCP' && (
-                        <span
-                          className="rounded-full px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide leading-none"
-                          style={{
-                            background: 'linear-gradient(to bottom, #3D7DFF 0%, #0059FF 100%)',
-                            color: '#fff',
-                          }}
-                        >
-                          new
-                        </span>
-                      )}
                     </Link>
                   ) : (
                     <span

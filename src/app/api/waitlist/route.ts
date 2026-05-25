@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { sql, isDbConfigured } from '@/lib/db'
 
 // Basic RFC-5322-ish email check — good enough to reject obvious junk.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -16,38 +17,53 @@ export async function POST(request: Request) {
   }
   const address = email.trim().toLowerCase()
 
-  const apiKey = process.env.RESEND_API_KEY
-  const notifyTo = process.env.WAITLIST_NOTIFY_TO
-  // Resend's shared sandbox sender works without domain verification for testing.
-  const from = process.env.WAITLIST_FROM ?? 'Avora <onboarding@resend.dev>'
-
-  if (!apiKey || !notifyTo) {
-    console.error('Waitlist signup received but RESEND_API_KEY / WAITLIST_NOTIFY_TO are not set:', address)
+  if (!isDbConfigured || !sql) {
+    console.error('Waitlist signup received but DATABASE_URL is not set:', address)
     return Response.json(
       { error: 'Waitlist is not configured yet. Please try again later.' },
       { status: 503 },
     )
   }
 
-  const resend = new Resend(apiKey)
+  // DB is the source of truth. Dedupe on email; an existing address is still a success.
+  let isNew = true
+  try {
+    const rows = await sql`
+      INSERT INTO waitlist_signups (email, source)
+      VALUES (${address}, 'landing')
+      ON CONFLICT (email) DO NOTHING
+      RETURNING id
+    `
+    isNew = rows.length > 0
+  } catch (err) {
+    console.error('Waitlist DB insert failed:', err)
+    return Response.json({ error: 'Could not submit right now. Please try again.' }, { status: 502 })
+  }
+
+  // Best-effort notification — never fail the signup if the email send fails.
+  if (isNew) {
+    void notifyNewSignup(address)
+  }
+
+  return Response.json({ ok: true, alreadyJoined: !isNew })
+}
+
+async function notifyNewSignup(address: string) {
+  const apiKey = process.env.RESEND_API_KEY
+  const notifyTo = process.env.WAITLIST_NOTIFY_TO
+  const from = process.env.WAITLIST_FROM ?? 'Avora <onboarding@resend.dev>'
+  if (!apiKey || !notifyTo) return
 
   try {
-    const { error } = await resend.emails.send({
+    const resend = new Resend(apiKey)
+    await resend.emails.send({
       from,
       to: [notifyTo],
       replyTo: address,
       subject: `New Avora waitlist signup: ${address}`,
       text: `${address} just joined the Avora waitlist.`,
     })
-
-    if (error) {
-      console.error('Resend error:', error)
-      return Response.json({ error: 'Could not submit right now. Please try again.' }, { status: 502 })
-    }
   } catch (err) {
-    console.error('Waitlist send failed:', err)
-    return Response.json({ error: 'Could not submit right now. Please try again.' }, { status: 502 })
+    console.error('Waitlist notification email failed (signup was still saved):', err)
   }
-
-  return Response.json({ ok: true })
 }
