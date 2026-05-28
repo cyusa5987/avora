@@ -19,8 +19,7 @@ import {
   ArrowDownRight,
   MoreHorizontal,
   Search,
-  Sun,
-  Moon,
+
   Menu,
   X,
   Layers,
@@ -31,7 +30,6 @@ import {
   Activity,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useTheme } from '@/lib/theme-context'
 
 const SF =
   '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif'
@@ -396,8 +394,7 @@ function Sidebar({ isDark, open, onClose }: { isDark: boolean; open: boolean; on
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { theme, toggle } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeInsight, setActiveInsight] = useState<number | null>(null)
 
@@ -484,15 +481,6 @@ export default function DashboardPage() {
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#3E6DF2]" />
             </button>
 
-            {/* Theme toggle */}
-            <button
-              onClick={toggle}
-              className="grid place-items-center rounded-[9px] w-8 h-8 transition-colors cursor-pointer"
-              style={{ background: w(isDark, 0.04), border: `1px solid ${w(isDark, 0.07)}`, color: w(isDark, 0.55) }}
-              aria-label="Toggle theme"
-            >
-              {isDark ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
           </div>
         </header>
 

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sun, Moon } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { WaitlistModal } from '@/components/waitlist-modal'
@@ -11,7 +10,6 @@ import { Footer } from '@/components/ui/footer-section'
 import { DashboardPreview } from '@/components/dashboard-preview'
 import { FeaturesGrid } from '@/components/features-grid'
 import { HowItWorks } from '@/components/how-it-works'
-import { useTheme } from '@/lib/theme-context'
 
 const FAQS = [
   {
@@ -138,8 +136,7 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
-  const { theme, toggle } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
 
   return (
     <div
@@ -290,21 +287,6 @@ export default function Home() {
         onJoinWaitlist={() => { setPricingOpen(false); setModalOpen(true) }}
       />
 
-      {/* Light / dark toggle */}
-      <motion.button
-        onClick={toggle}
-        whileTap={{ scale: 0.92 }}
-        className="fixed bottom-6 right-6 z-50 grid place-items-center rounded-full w-10 h-10 cursor-pointer transition-colors duration-200"
-        style={{
-          background: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
-          border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.10)',
-          backdropFilter: 'blur(12px)',
-          color: isDark ? 'rgba(255,255,255,0.70)' : 'rgba(0,0,0,0.60)',
-        }}
-        aria-label="Toggle light/dark mode"
-      >
-        {isDark ? <Sun size={16} /> : <Moon size={16} />}
-      </motion.button>
     </div>
   )
 }

@@ -1,8 +1,8 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useEffect, ReactNode } from 'react'
 
-type Theme = 'dark' | 'light'
+type Theme = 'dark'
 
 const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
   theme: 'dark',
@@ -10,18 +10,14 @@ const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
 })
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof document === 'undefined') return 'dark'
-    return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-  })
-
+  // Lock to dark mode permanently
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    try { localStorage.setItem('avora-theme', theme) } catch {}
-  }, [theme])
+    document.documentElement.classList.add('dark')
+    try { localStorage.setItem('avora-theme', 'dark') } catch {}
+  }, [])
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(t => t === 'dark' ? 'light' : 'dark') }}>
+    <ThemeContext.Provider value={{ theme: 'dark', toggle: () => {} }}>
       {children}
     </ThemeContext.Provider>
   )

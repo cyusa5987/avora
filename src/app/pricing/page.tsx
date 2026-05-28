@@ -7,8 +7,6 @@ import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/ui/footer-section'
 import { WaitlistModal } from '@/components/waitlist-modal'
-import { useTheme } from '@/lib/theme-context'
-import { Sun, Moon } from 'lucide-react'
 
 const SF =
   '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif'
@@ -392,8 +390,7 @@ export default function PricingPage() {
   const [frequency, setFrequency] = useState<Frequency>('monthly')
   const [modalOpen, setModalOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
-  const { theme, toggle } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
 
   return (
     <div
@@ -544,21 +541,6 @@ export default function PricingPage() {
       <Footer />
       <WaitlistModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-      {/* Theme toggle */}
-      <motion.button
-        onClick={toggle}
-        whileTap={{ scale: 0.92 }}
-        className="fixed bottom-6 right-6 z-50 grid place-items-center rounded-full w-10 h-10 cursor-pointer transition-colors duration-200"
-        style={{
-          background: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
-          border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.10)',
-          backdropFilter: 'blur(12px)',
-          color: isDark ? 'rgba(255,255,255,0.70)' : 'rgba(0,0,0,0.60)',
-        }}
-        aria-label="Toggle light/dark mode"
-      >
-        {isDark ? <Sun size={16} /> : <Moon size={16} />}
-      </motion.button>
     </div>
   )
 }
