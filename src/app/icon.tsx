@@ -10,11 +10,22 @@ export default function Icon() {
         style={{
           width: '100%',
           height: '100%',
-          background: '#0059FF',
-          borderRadius: '50%',
+          background: '#000000',
+          borderRadius: 6,
           display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            background: '#EBBCE7',
+            borderRadius: '50%',
+          }}
+        />
+      </div>
     ),
     { ...size },
   )

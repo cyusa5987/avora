@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { LiquidButton } from '@/components/ui/liquid-glass-button'
 import { useTheme } from '@/lib/theme-context'
 
 function PaperPlaneIcon() {
@@ -33,26 +32,29 @@ function AvoraLogoMark() {
   )
 }
 
-const NAV_LINKS = [
+const NAV_LINKS: { label: string; href: string; badge?: string }[] = [
   { label: 'Features', href: '#features' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'MCP', href: '#mcp' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'MCP', href: '#mcp', badge: 'NEW' },
 ]
 
 interface NavbarProps {
   onOpenModal: () => void
+  onOpenPricing?: () => void
 }
 
-export function Navbar({ onOpenModal }: NavbarProps) {
+export function Navbar({ onOpenModal, onOpenPricing }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const { theme } = useTheme()
+  const pathname = usePathname()
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
+    const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
 
   // Smooth-scroll for in-page hash links (Lenis-friendly).
   const handleHashClick = (href: string) => (e: React.MouseEvent) => {
@@ -72,100 +74,146 @@ export function Navbar({ onOpenModal }: NavbarProps) {
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 inset-x-0 z-50"
     >
-      <div className="relative transition-all duration-300">
-        {/* Blur layer sits behind the nav content and fades out at the bottom
-            so the navbar blends seamlessly into the page — no fill, no hard edge. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 transition-opacity duration-300"
-          style={{
-            bottom: '-2px',
-            opacity: scrolled ? 1 : 0,
-            backdropFilter: 'blur(14px)',
-            WebkitBackdropFilter: 'blur(14px)',
-            maskImage:
-              'linear-gradient(to bottom, black 0%, black 92%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to bottom, black 0%, black 92%, transparent 100%)',
-          }}
-        />
+      <div className="relative">
+        {/* === Mobile: always a compact pill === */}
         <nav
-          className={cn(
-            'relative mx-auto flex max-w-7xl items-center justify-between transition-all duration-300 px-6',
-            scrolled ? 'h-[48px]' : 'h-[48px]'
-          )}
+          className="sm:hidden relative mx-auto flex items-center gap-3 rounded-full border h-[50px] w-fit pl-3 pr-1.5"
+          style={{
+            marginTop: 14,
+            background: theme === 'light'
+              ? (scrolled ? 'rgba(245,245,245,0.85)' : 'rgba(245,245,245,0.72)')
+              : (scrolled ? 'rgba(22,22,22,0.55)' : 'rgba(28,28,28,0.72)'),
+            borderColor: theme === 'light'
+              ? (scrolled ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.07)')
+              : (scrolled ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.07)'),
+            backdropFilter: scrolled ? 'blur(44px) saturate(180%)' : 'blur(16px)',
+            WebkitBackdropFilter: scrolled ? 'blur(44px) saturate(180%)' : 'blur(16px)',
+            boxShadow: theme === 'light'
+              ? '0 4px 18px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.8)'
+              : (scrolled ? '0 8px 28px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.07)' : '0 4px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.05)'),
+            transition: 'background 320ms cubic-bezier(0.22,1,0.36,1), border-color 320ms cubic-bezier(0.22,1,0.36,1), backdrop-filter 320ms cubic-bezier(0.22,1,0.36,1), box-shadow 320ms cubic-bezier(0.22,1,0.36,1)',
+          }}
         >
-          {/* Logo */}
           <Link
             href="/"
-            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-            className="px-1 py-1 transition-opacity duration-200 hover:opacity-75"
+            onClick={(e) => {
+              if (pathname === '/') {
+                e.preventDefault()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+            className="inline-flex items-center transition-opacity duration-200 hover:opacity-75"
+          >
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden>
+              <rect width="32" height="32" rx="7" fill="#000000" />
+              <circle cx="16" cy="16" r="9" fill="#3E6DF2" />
+            </svg>
+          </Link>
+          <span
+            aria-hidden
+            className="block h-5 w-px"
+            style={{ background: theme === 'light' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)' }}
+          />
+          <motion.button
+            whileTap={{ scale: 0.93 }}
+            onClick={() => setMobileOpen((v) => !v)}
+            className="rounded-xl p-2 transition-colors"
+            style={{ color: theme === 'light' ? '#5A5856' : '#ffffff' }}
+            aria-label="Toggle navigation"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {mobileOpen ? (
+                <motion.span key="close" initial={{ rotate: -45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 45, opacity: 0 }} transition={{ duration: 0.18 }} className="block">
+                  <X className="size-5" />
+                </motion.span>
+              ) : (
+                <motion.span key="menu" initial={{ rotate: 45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -45, opacity: 0 }} transition={{ duration: 0.18 }} className="block">
+                  <Menu className="size-5" />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+        </nav>
+
+        {/* === Desktop === */}
+        <nav
+          className="hidden sm:flex relative items-center justify-between h-[52px] w-full px-8"
+          style={{
+            background: scrolled
+              ? theme === 'light' ? 'rgba(245,245,245,0.55)' : 'rgba(18,18,18,0.55)'
+              : 'transparent',
+            backdropFilter: scrolled ? 'blur(28px) saturate(180%)' : 'none',
+            WebkitBackdropFilter: scrolled ? 'blur(28px) saturate(180%)' : 'none',
+            transition: 'background 300ms ease, border-color 300ms ease, backdrop-filter 300ms ease',
+          }}
+        >
+          <Link
+            href="/"
+            onClick={(e) => {
+              if (pathname === '/') {
+                e.preventDefault()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+            className="inline-flex items-center transition-opacity duration-200 hover:opacity-75 px-1"
           >
             <span
-              className="text-[15px] font-bold tracking-tight"
-              style={{ fontFamily: 'var(--font-syne)', color: 'var(--av-wordmark)' }}
+              className="text-[14px] tracking-tight"
+              style={{ fontFamily: 'var(--font-syne)', color: '#5A5856' }}
             >
               avora
             </span>
           </Link>
 
-          {/* Desktop nav links — absolutely centred */}
-          <ul className="hidden md:flex items-center gap-5 absolute left-1/2 -translate-x-1/2" role="list">
-            {NAV_LINKS.map((link) => (
-              <li key={link.label}>
-                {link.href ? (
+          <ul
+            className="flex items-center gap-2 shrink-0 absolute left-1/2 -translate-x-1/2"
+            role="list"
+          >
+            {NAV_LINKS.map((link) => {
+              const navLinkClass =
+                `inline-flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-lg transition-all duration-150 ${
+                  theme === 'light' ? 'hover:bg-black/[0.06]' : 'hover:bg-white/[0.07]'
+                }`
+              const labelEl = (
+                <>
+                  {link.label}
+                  {link.badge && (
+                    <span
+                      className="ml-0.5 rounded-md px-1.5 py-px text-[9px] font-semibold tracking-wide"
+                      style={{ background: '#3E6DF2', color: '#FFFFFF' }}
+                    >
+                      {link.badge}
+                    </span>
+                  )}
+                </>
+              )
+              return (
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     onClick={handleHashClick(link.href)}
-                    style={{ color: 'var(--av-nav-link)' }}
-                    className="inline-flex items-center gap-1.5 text-[13.5px] font-normal px-1 py-1 transition-all duration-200 hover:font-semibold"
+                    className={navLinkClass}
+                    style={{ color: '#5A5856' }}
                   >
-                    {link.label}
+                    {labelEl}
                   </Link>
-                ) : (
-                  <span
-                    style={{ color: 'var(--av-nav-link)', cursor: 'pointer' }}
-                    className="inline-flex items-center gap-1.5 text-[13.5px] font-normal px-1 py-1 transition-all duration-200 hover:font-semibold"
-                  >
-                    {link.label}
-                  </span>
-                )}
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
 
-          {/* Right: CTA + mobile toggle */}
-          <div className="flex items-center gap-3">
-            <LiquidButton
-              onClick={onOpenModal}
-              size="sm"
-              className="hidden md:inline-flex"
-              style={{ color: 'var(--av-text-1)' }}
-            >
-              Join waitlist
-            </LiquidButton>
-
-            {/* Mobile hamburger */}
-            <motion.button
-              whileTap={{ scale: 0.93 }}
-              onClick={() => setMobileOpen((v) => !v)}
-              className="md:hidden rounded-xl p-2 transition-colors"
-              style={{ color: 'var(--av-text-2)' }}
-              aria-label="Toggle navigation"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {mobileOpen ? (
-                  <motion.span key="close" initial={{ rotate: -45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 45, opacity: 0 }} transition={{ duration: 0.18 }} className="block">
-                    <X className="size-5" />
-                  </motion.span>
-                ) : (
-                  <motion.span key="menu" initial={{ rotate: 45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -45, opacity: 0 }} transition={{ duration: 0.18 }} className="block">
-                    <Menu className="size-5" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          </div>
+          <button
+            onClick={onOpenModal}
+            className="inline-flex items-center justify-center rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] shrink-0 cursor-pointer"
+            style={{
+              background: 'linear-gradient(180deg, #5B85FF 0%, #2D54E0 100%)',
+              color: '#FFFFFF',
+              boxShadow:
+                '0 1px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
+            }}
+          >
+            Get Started
+          </button>
         </nav>
       </div>
 
@@ -178,11 +226,12 @@ export function Navbar({ onOpenModal }: NavbarProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-4 mt-2 overflow-hidden rounded-2xl border shadow-2xl md:hidden"
+            className="mx-4 mt-2 overflow-hidden rounded-2xl border shadow-2xl sm:hidden"
             style={{
-              backgroundColor: 'var(--av-surface)',
-              borderColor: 'var(--av-border)',
+              backgroundColor: theme === 'light' ? 'rgba(245,245,245,0.95)' : 'rgba(15,15,15,0.85)',
+              borderColor: theme === 'light' ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.1)',
               backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
             }}
           >
             <ul className="flex flex-col px-3 py-3 gap-0.5" role="list">
@@ -192,29 +241,43 @@ export function Navbar({ onOpenModal }: NavbarProps) {
                     <Link
                       href={link.href}
                       onClick={handleHashClick(link.href)}
-                      style={{ color: 'var(--av-nav-link)' }}
-                      className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-normal transition-opacity duration-150 hover:opacity-80"
+                      className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-normal transition-colors duration-150"
+                      style={{
+                        color: theme === 'light' ? '#5A5856' : '#ffffff',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = theme === 'light' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.10)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
                       {link.label}
                     </Link>
                   ) : (
-                    <span
-                      style={{ color: 'var(--av-nav-link)', cursor: 'pointer' }}
-                      className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-normal transition-opacity duration-150 hover:opacity-80"
+                    <button
+                      onClick={() => {
+                        if (link.label === 'Pricing') {
+                          setMobileOpen(false)
+                          onOpenPricing?.()
+                        }
+                      }}
+                      style={{ cursor: 'pointer', color: theme === 'light' ? '#5A5856' : '#ffffff' }}
+                      className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-normal text-left transition-colors duration-150"
+                      onMouseEnter={e => (e.currentTarget.style.background = theme === 'light' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.10)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
                       {link.label}
-                    </span>
+                    </button>
                   )}
                 </motion.li>
               ))}
             </ul>
-            <div className="border-t px-4 py-3" style={{ borderColor: 'var(--av-border)' }}>
+            <div className="border-t px-4 py-3" style={{ borderColor: theme === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' }}>
               <button
                 onClick={() => { setMobileOpen(false); onOpenModal() }}
-                className="btn-cta inline-flex w-full items-center justify-center gap-2 rounded-[9px] px-4 py-1.5 text-[12px] font-medium"
-                style={{ transform: 'none' }}
-                onMouseEnter={e => (e.currentTarget.style.transform = 'none')}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-[14px] font-medium text-white transition-transform duration-200 hover:scale-[1.01] active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(180deg, #5B85FF 0%, #2D54E0 100%)',
+                  boxShadow:
+                    '0 6px 16px -4px rgba(45,84,224,0.40), 0 1px 2px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.35)',
+                }}
               >
                 Join waitlist
                 <PaperPlaneIcon />

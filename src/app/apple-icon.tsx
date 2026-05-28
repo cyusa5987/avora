@@ -10,11 +10,22 @@ export default function AppleIcon() {
         style={{
           width: '100%',
           height: '100%',
-          background: '#0059FF',
-          borderRadius: '50%',
+          background: '#000000',
+          borderRadius: 36,
           display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            background: '#EBBCE7',
+            borderRadius: '50%',
+          }}
+        />
+      </div>
     ),
     { ...size },
   )

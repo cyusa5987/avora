@@ -1,356 +1,287 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 
-/* ── Step visuals ─────────────────────────────────────────── */
-
-function ConnectVisual() {
-  const platforms = [
-    { name: 'Meta Ads', color: '#0059FF', connected: true },
-    { name: 'Google Ads', color: '#4285F4', connected: false },
-    { name: 'TikTok Ads', color: '#69C9D0', connected: false },
-  ]
+/* ── Mini sparkline SVG ───────────────────────────────────── */
+function Sparkline({ up }: { up: boolean }) {
+  const points = up
+    ? '0,18 8,14 16,16 24,10 32,12 40,6 48,8 56,3 64,5'
+    : '0,5 8,8 16,6 24,12 32,10 40,14 48,12 56,16 64,18'
   return (
-    <div
-      className="rounded-2xl p-6"
-      style={{ background: 'var(--av-surface)', border: '1px solid var(--av-border)' }}
-    >
-      <div
-        className="mb-4 text-[10px] uppercase tracking-widest"
-        style={{ color: 'var(--av-text-2)' }}
-      >
-        Ad Platforms
-      </div>
-      {platforms.map((p) => (
-        <div
-          key={p.name}
-          className="mb-2 flex items-center justify-between rounded-xl px-3 py-3"
-          style={{
-            background: 'var(--av-subtle)',
-            border: '1px solid var(--av-border)',
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-7 w-7 items-center justify-center rounded-lg"
-              style={{ background: p.color + '22' }}
-            >
-              <div className="h-3 w-3 rounded-full" style={{ background: p.color }} />
-            </div>
-            <span
-              className="text-[13px]"
-              style={{
-                color: p.connected ? 'var(--av-text-1)' : 'var(--av-text-2)',
-              }}
-            >
-              {p.name}
-            </span>
-          </div>
-          {p.connected ? (
-            <span
-              className="rounded-full px-2 py-0.5 text-[10px]"
-              style={{
-                background: 'rgba(74,222,128,0.1)',
-                color: '#4ade80',
-                border: '1px solid rgba(74,222,128,0.2)',
-              }}
-            >
-              ✓ Connected
-            </span>
-          ) : (
-            <span
-              className="rounded-full px-2.5 py-0.5 text-[10px]"
-              style={{
-                background: 'var(--av-subtle)',
-                color: 'var(--av-text-2)',
-                border: '1px solid var(--av-border)',
-              }}
-            >
-              Connect
-            </span>
-          )}
-        </div>
-      ))}
-      <div
-        className="mt-4 flex items-center gap-2 rounded-xl px-4 py-3"
-        style={{
-          background: 'rgba(0,89,255,0.08)',
-          border: '1px solid rgba(0,89,255,0.18)',
-        }}
-      >
-        <div
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ background: '#0059FF', boxShadow: '0 0 6px #0059FF' }}
-        />
-        <span className="text-[11px]" style={{ color: '#5b8cff' }}>
-          Meta account synced — 3 ad accounts found
-        </span>
-      </div>
-    </div>
+    <svg width="64" height="22" viewBox="0 0 64 22" fill="none">
+      <polyline
+        points={points}
+        stroke={up ? '#22c55e' : '#ef4444'}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
   )
 }
 
-function GenerateVisual() {
-  const ads = [
-    {
-      headline: 'Transform Your Practice',
-      body: 'Premium gear designed for serious practitioners. Free shipping over $75.',
-    },
-    {
-      headline: 'Join 50,000 Yogis',
-      body: 'The mat that moves with you. Bestselling collection — now 20% off.',
-    },
-    {
-      headline: 'Your Flow. Elevated.',
-      body: 'Studio-quality gear without the studio price. See why athletes choose us.',
-    },
-  ]
+/* ── Ad thumbnail placeholder ─────────────────────────────── */
+function AdThumb({ color }: { color: string }) {
   return (
     <div
-      className="rounded-2xl p-6"
-      style={{ background: 'var(--av-surface)', border: '1px solid var(--av-border)' }}
+      className="h-8 w-8 rounded flex-shrink-0"
+      style={{ backgroundColor: color, opacity: 0.85 }}
+    />
+  )
+}
+
+/* ── Status pill ──────────────────────────────────────────── */
+function StatusPill({ active }: { active: boolean }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+      style={{
+        backgroundColor: active ? 'rgba(34,197,94,0.12)' : 'rgba(156,163,175,0.15)',
+        color: active ? '#16a34a' : '#6b7280',
+      }}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--av-text-2)' }}>
-          Generated Ads
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: active ? '#22c55e' : '#9ca3af' }}
+      />
+      {active ? 'Active' : 'Paused'}
+    </span>
+  )
+}
+
+/* ── Dashboard mockup ─────────────────────────────────────── */
+const campaigns = [
+  { name: 'Summer Sale — Retargeting', budget: '$120/d', spend: '$94.20', roas: '4.2×', ctr: '3.8%', up: true,  colors: ['#f97316','#fb923c','#fed7aa'] },
+  { name: 'Brand Awareness Q3',        budget: '$60/d',  spend: '$58.40', roas: '2.1×', ctr: '1.4%', up: false, colors: ['#6366f1','#818cf8','#c7d2fe'] },
+  { name: 'Lookalike — Purchasers',    budget: '$80/d',  spend: '$79.90', roas: '5.8×', ctr: '4.9%', up: true,  colors: ['#2786B9','#4DA5D4','#7dd3fc'] },
+  { name: 'DPA — Abandoned Cart',      budget: '$40/d',  spend: '$38.10', roas: '6.3×', ctr: '5.5%', up: true,  colors: ['#ec4899','#f472b6','#fbcfe8'] },
+  { name: 'Cold — Interest Stack',     budget: '$50/d',  spend: '$22.70', roas: '1.4×', ctr: '0.9%', up: false, colors: ['#eab308','#facc15','#fef08a'] },
+]
+
+function DashboardMockup() {
+  return (
+    <div className="flex h-full overflow-hidden" style={{ fontSize: 11 }}>
+      {/* Sidebar */}
+      <div
+        className="flex flex-col gap-0.5 px-2 py-4 w-28 flex-shrink-0 border-r"
+        style={{ backgroundColor: 'var(--av-surface)', borderColor: 'var(--av-border)' }}
+      >
+        <div className="px-2 pb-3 mb-1 border-b" style={{ borderColor: 'var(--av-border)' }}>
+          <span className="font-bold text-[12px]" style={{ color: 'var(--av-text-1)', fontFamily: 'var(--font-syne)' }}>avora</span>
         </div>
-        <div
-          className="rounded-full px-2 py-0.5 text-[10px]"
-          style={{
-            background: 'rgba(0,89,255,0.12)',
-            color: '#5b8cff',
-            border: '1px solid rgba(0,89,255,0.22)',
-          }}
-        >
-          ✦ AI
-        </div>
-      </div>
-      <div className="space-y-2">
-        {ads.map((ad, i) => (
+        {['Dashboard','Campaigns','Ad Sets','Ads','Analytics','Settings'].map((item, i) => (
           <div
-            key={i}
-            className="rounded-xl p-3.5"
+            key={item}
+            className="rounded-md px-2 py-1.5 cursor-pointer"
             style={{
-              background: 'var(--av-subtle)',
-              border: '1px solid var(--av-border)',
+              backgroundColor: i === 1 ? 'rgba(39,134,185,0.12)' : 'transparent',
+              color: i === 1 ? '#2786B9' : 'var(--av-text-2)',
+              fontWeight: i === 1 ? 600 : 400,
             }}
           >
-            <div
-              className="mb-1 text-[12px] font-semibold"
-              style={{ color: 'var(--av-text-1)' }}
-            >
-              {ad.headline}
-            </div>
-            <div
-              className="text-[11px] leading-relaxed"
-              style={{ color: 'var(--av-text-2)' }}
-            >
-              {ad.body}
-            </div>
+            {item}
           </div>
         ))}
       </div>
+
+      {/* Main */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Top bar */}
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 border-b flex-shrink-0"
+          style={{ borderColor: 'var(--av-border)', backgroundColor: 'var(--av-surface)' }}
+        >
+          <span className="font-semibold text-[12px]" style={{ color: 'var(--av-text-1)' }}>Campaigns</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--av-subtle)', color: 'var(--av-text-2)' }}>5</span>
+          <div className="flex gap-1.5 ml-3 flex-wrap">
+            {['All','Active','Paused','Draft'].map((f, i) => (
+              <span
+                key={f}
+                className="rounded-full px-2.5 py-0.5 text-[10px]"
+                style={{
+                  backgroundColor: i === 0 ? '#2786B9' : 'var(--av-subtle)',
+                  color: i === 0 ? '#fff' : 'var(--av-text-2)',
+                  border: '1px solid',
+                  borderColor: i === 0 ? '#2786B9' : 'var(--av-border)',
+                }}
+              >
+                {f}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Table header */}
+        <div
+          className="grid items-center px-4 py-1.5 border-b flex-shrink-0"
+          style={{
+            gridTemplateColumns: '1fr 60px 52px 52px 44px 44px 68px 72px',
+            borderColor: 'var(--av-border)',
+            backgroundColor: 'var(--av-subtle)',
+            color: 'var(--av-text-2)',
+            fontSize: 10,
+          }}
+        >
+          <span>Campaign</span>
+          <span>Status</span>
+          <span>Budget</span>
+          <span>Spend</span>
+          <span>ROAS</span>
+          <span>CTR</span>
+          <span>Trend</span>
+          <span>Creatives</span>
+        </div>
+
+        {/* Rows */}
+        <div className="flex-1 overflow-auto" style={{ backgroundColor: 'var(--av-bg)' }}>
+          {campaigns.map((c, i) => (
+            <div
+              key={i}
+              className="grid items-center px-4 py-2 border-b"
+              style={{
+                gridTemplateColumns: '1fr 60px 52px 52px 44px 44px 68px 72px',
+                borderColor: 'var(--av-border)',
+              }}
+            >
+              <div>
+                <div className="font-medium leading-tight truncate pr-2" style={{ color: 'var(--av-text-1)', fontSize: 11 }}>{c.name}</div>
+              </div>
+              <StatusPill active={i !== 1 && i !== 4} />
+              <span style={{ color: 'var(--av-text-2)' }}>{c.budget}</span>
+              <span style={{ color: 'var(--av-text-1)', fontWeight: 500 }}>{c.spend}</span>
+              <span style={{ color: c.up ? '#16a34a' : '#ef4444', fontWeight: 600 }}>{c.roas}</span>
+              <span style={{ color: 'var(--av-text-2)' }}>{c.ctr}</span>
+              <Sparkline up={c.up} />
+              <div className="flex gap-1">
+                {c.colors.map((col, j) => <AdThumb key={j} color={col} />)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
 
-function ScaleVisual() {
-  const points = [28, 34, 31, 40, 38, 50, 46, 58, 54, 66, 62, 74, 70, 84, 80, 96]
-  const max = 96
-  const W = points.length * 22
-  const H = 80
-  const pts = points
-    .map((v, i) => `${i * 22 + 11},${H - (v / max) * (H - 8)}`)
-    .join(' ')
-
+/* ── Browser chrome wrapper ───────────────────────────────── */
+function BrowserFrame() {
   return (
     <div
-      className="rounded-2xl p-6"
-      style={{ background: 'var(--av-surface)', border: '1px solid var(--av-border)' }}
+      className="rounded-xl overflow-hidden shadow-2xl border flex flex-col"
+      style={{
+        borderColor: 'var(--av-border)',
+        backgroundColor: 'var(--av-surface)',
+        height: 380,
+      }}
     >
-      <div className="mb-1 flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--av-text-2)' }}>
-          ROAS over time
+      {/* Chrome bar */}
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 border-b flex-shrink-0"
+        style={{ borderColor: 'var(--av-border)', backgroundColor: 'var(--av-surface)' }}
+      >
+        <div className="flex gap-1.5">
+          <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
+          <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+          <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
         </div>
-        <span className="text-[12px] font-semibold" style={{ color: '#4ade80' }}>
-          +34% ↑
-        </span>
+        <div
+          className="ml-3 flex-1 rounded-md px-3 py-1 text-[11px]"
+          style={{ backgroundColor: 'var(--av-subtle)', color: 'var(--av-text-2)' }}
+        >
+          app.avora.ai/campaigns
+        </div>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ marginBottom: 16 }}>
-        <defs>
-          <linearGradient id="sc-scale" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0059FF" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#0059FF" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path
-          d={`M ${pts} L ${(points.length - 1) * 22 + 11},${H} L 11,${H} Z`}
-          fill="url(#sc-scale)"
-        />
-        <polyline
-          points={pts}
-          fill="none"
-          stroke="#0059FF"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: 'ROAS', value: '4.2×', green: true },
-          { label: 'Spend', value: '$24K', green: false },
-          { label: 'CPC', value: '$0.76', green: false },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-lg p-3 text-center"
-            style={{
-              background: 'var(--av-subtle)',
-              border: '1px solid var(--av-border)',
-            }}
-          >
-            <div className="mb-1 text-[10px]" style={{ color: 'var(--av-text-2)' }}>
-              {s.label}
-            </div>
-            <div
-              className="text-[15px] font-semibold"
-              style={{ color: s.green ? '#4ade80' : 'var(--av-text-1)' }}
-            >
-              {s.value}
-            </div>
-          </div>
-        ))}
+
+      {/* Dashboard */}
+      <div className="flex-1 overflow-hidden">
+        <DashboardMockup />
       </div>
     </div>
   )
 }
 
-/* ── Steps data ───────────────────────────────────────────── */
-
+/* ── Steps ────────────────────────────────────────────────── */
 const STEPS = [
   {
-    number: '01',
-    title: 'Connect and brief',
-    description:
-      'Link Meta in one click and tell Avora about your offer. From there it has everything it needs — account history, audiences, and the brief that shapes every campaign.',
-    visual: <ConnectVisual />,
+    n: '01',
+    title: 'Connect your ad account',
+    body: 'Link your Meta Business account in one click. Avora reads your historical data to understand what\'s worked before.',
   },
   {
-    number: '02',
-    title: 'Avora builds the campaigns',
-    description:
-      'Copy, audiences, budget splits and full ad-set structure — drafted in under a minute. You review, edit anything, and approve when ready.',
-    visual: <GenerateVisual />,
+    n: '02',
+    title: 'Set your goal, not your settings',
+    body: 'Tell Avora what you\'re optimising for — purchases, leads, or awareness. It handles audience, creative, and bidding automatically.',
   },
   {
-    number: '03',
-    title: 'It scales itself',
-    description:
-      "Once live, Avora watches every metric every hour. It reallocates spend toward winners, kills fatigue and compounds your ROAS — no manual babysitting.",
-    visual: <ScaleVisual />,
+    n: '03',
+    title: 'Watch performance in real time',
+    body: 'Your live dashboard shows every campaign\'s spend, ROAS, and trend. Avora shifts budget to winners around the clock — no manual work.',
   },
 ]
 
-/* ── Section ──────────────────────────────────────────────── */
-
+/* ── Main export ──────────────────────────────────────────── */
 export function Showcase() {
+  const [active, setActive] = useState(2)
+
   return (
-    <section className="px-6 py-32" style={{ fontFamily: 'var(--font-inter)' }}>
-      <div className="mx-auto max-w-7xl">
-        {/* Centered eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="mb-8 text-center text-[14px] uppercase tracking-wider"
-          style={{ fontFamily: 'var(--font-fragment-mono)', color: 'var(--av-text-1)' }}
-        >
-          <span style={{ color: 'var(--av-secondary)' }}>[</span> PLATFORM{' '}
-          <span style={{ color: 'var(--av-secondary)' }}>]</span>
-        </motion.div>
-
-        {/* Centered heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-          className="mx-auto max-w-3xl text-center"
-        >
-          <h2
-            className="text-[44px] md:text-[60px] leading-[1.04] tracking-tight"
-            style={{
-              fontFamily:
-                "var(--font-playfair)",
-              fontWeight: 600,
-              color: 'var(--av-text-1)',
-            }}
-          >
-            From signup to scaled<br />in three steps.
-          </h2>
-
-          <p
-            className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed"
-            style={{ color: 'var(--av-text-2)' }}
-          >
-            Connect Meta, brief Avora once, and watch your campaigns build, ship
-            and improve themselves.
-          </p>
-        </motion.div>
-
+    <section className="px-6 py-24">
+      <div className="mx-auto max-w-6xl flex flex-col lg:flex-row gap-16 items-start">
         {/* Steps */}
-        <div className="mt-20 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-6 lg:gap-8">
-          {STEPS.map((step, i) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{
-                duration: 0.5,
-                ease: 'easeOut',
-                delay: i * 0.08,
-              }}
-              className="flex flex-col"
-            >
-              {/* Visual */}
-              <div>{step.visual}</div>
-
-              {/* Step number */}
-              <div
-                className="mt-8 text-[12px] uppercase tracking-[0.18em]"
-                style={{
-                  fontFamily: 'var(--font-fragment-mono)',
-                  color: 'var(--av-text-2)',
-                }}
+        <div className="flex flex-col gap-8 lg:w-[38%] lg:pt-4 lg:sticky lg:top-24">
+          {STEPS.map((step, i) => {
+            const isActive = i === active
+            return (
+              <button
+                key={step.n}
+                onClick={() => setActive(i)}
+                className="text-left group"
               >
-                {step.number}
-              </div>
+                <div
+                  className="pl-4 border-l-2 transition-colors duration-200"
+                  style={{ borderColor: isActive ? '#2786B9' : 'transparent' }}
+                >
+                  <div
+                    className="text-[11px] mb-1.5 font-mono"
+                    style={{ color: 'var(--av-text-2)' }}
+                  >
+                    {step.n}
+                  </div>
+                  <div
+                    className="text-[22px] leading-snug transition-colors duration-200"
+                    style={{
+                      fontFamily: 'var(--font-instrument-serif)',
+                      color: isActive ? 'var(--av-text-1)' : 'var(--av-text-2)',
+                      fontWeight: isActive ? 500 : 400,
+                    }}
+                  >
+                    {step.title}
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {isActive && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="mt-2 text-[14px] leading-relaxed overflow-hidden"
+                        style={{ color: 'var(--av-text-2)' }}
+                      >
+                        {step.body}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </button>
+            )
+          })}
+        </div>
 
-              {/* Title */}
-              <h3
-                className="mt-3 text-[24px] md:text-[26px] leading-snug tracking-tight"
-                style={{
-                  fontFamily:
-                    "var(--font-playfair)",
-                  fontWeight: 600,
-                  color: 'var(--av-text-1)',
-                }}
-              >
-                {step.title}
-              </h3>
-
-              {/* Description */}
-              <p
-                className="mt-3 text-[15px] leading-relaxed"
-                style={{ color: 'var(--av-text-2)' }}
-              >
-                {step.description}
-              </p>
-            </motion.div>
-          ))}
+        {/* Browser mockup */}
+        <div className="flex-1 w-full">
+          <BrowserFrame />
         </div>
       </div>
     </section>

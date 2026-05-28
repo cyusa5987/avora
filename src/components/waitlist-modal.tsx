@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
+import { useTheme } from '@/lib/theme-context'
 
 interface WaitlistModalProps {
   open: boolean
@@ -11,15 +12,22 @@ interface WaitlistModalProps {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const SF =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif'
 
 export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [alreadyJoined, setAlreadyJoined] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -29,7 +37,13 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   }, [open, onClose])
 
   useEffect(() => {
-    if (open) { setEmail(''); setSubmitted(false); setSubmitting(false); setError(null) }
+    if (open) {
+      setEmail('')
+      setSubmitted(false)
+      setSubmitting(false)
+      setError(null)
+      setAlreadyJoined(false)
+    }
   }, [open])
 
   const submit = async () => {
@@ -46,11 +60,12 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: value }),
       })
+      const data = await res.json().catch(() => null)
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
         setError(data?.error ?? 'Something went wrong. Please try again.')
         return
       }
+      setAlreadyJoined(Boolean(data?.alreadyJoined))
       setSubmitted(true)
     } catch {
       setError('Network error. Please check your connection and try again.')
@@ -72,7 +87,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/55 backdrop-blur-md"
           />
 
           <motion.div
@@ -83,23 +98,29 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="modal-title"
+            aria-labelledby="waitlist-modal-title"
             className="fixed inset-0 z-[101] flex items-center justify-center p-4"
             onClick={onClose}
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm rounded-2xl border p-6 shadow-2xl"
+              className="relative w-full max-w-[400px] rounded-[20px] border p-7"
               style={{
-                backgroundColor: 'var(--av-surface)',
-                borderColor: 'var(--av-border)',
-                boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
+                background: isDark ? '#1A1A1A' : '#FFFFFF',
+                borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                boxShadow: isDark
+                  ? '0 32px 80px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)'
+                  : '0 32px 80px -12px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9)',
+                fontFamily: SF,
               }}
             >
               <button
                 onClick={onClose}
-                className="absolute right-4 top-4 rounded-lg p-1 transition-opacity opacity-30 hover:opacity-70"
-                style={{ color: 'var(--av-text-1)' }}
+                className={`absolute right-3.5 top-3.5 grid place-items-center rounded-lg w-7 h-7 transition-colors cursor-pointer ${
+                  isDark
+                    ? 'text-white/45 hover:text-white hover:bg-white/[0.06]'
+                    : 'text-black/40 hover:text-black hover:bg-black/[0.06]'
+                }`}
                 aria-label="Close"
               >
                 <X className="size-4" />
@@ -107,30 +128,79 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
 
               {!submitted ? (
                 <>
+                  <div className="mb-4 flex items-center">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden>
+                      <rect width="32" height="32" rx="7" fill="#000000" />
+                      <circle cx="16" cy="16" r="9" fill="#3E6DF2" />
+                    </svg>
+                  </div>
+
                   <h2
-                    id="modal-title"
-                    style={{ fontFamily: 'var(--font-albert-sans)', color: 'var(--av-text-1)' }}
-                    className="text-[17px] font-bold leading-snug pr-6"
+                    id="waitlist-modal-title"
+                    className="text-[18px] font-semibold leading-snug pr-6"
+                    style={{ letterSpacing: '-0.01em', color: isDark ? '#ffffff' : '#111111' }}
                   >
                     Join the Avora waitlist
                   </h2>
 
-                  <p style={{ color: 'var(--av-text-2)' }} className="mt-2 text-[13px] leading-relaxed">
-                    Drop your email and we'll let you know the moment Avora opens up.
+                  <p
+                    className="mt-2 text-[13.5px] leading-relaxed"
+                    style={{ color: isDark ? 'rgba(255,255,255,0.55)' : '#5A5856' }}
+                  >
+                    Drop your email and we&apos;ll let you know the moment Avora opens up.
                   </p>
 
+                  <label htmlFor="waitlist-email" className="sr-only">
+                    Email address
+                  </label>
                   <input
+                    id="waitlist-email"
                     type="email"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); if (error) setError(null) }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && !submitting) submit() }}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (error) setError(null)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !submitting) submit()
+                    }}
                     placeholder="you@example.com"
                     disabled={submitting}
-                    className="mt-5 w-full rounded-xl border px-4 py-2.5 text-[13px] outline-none transition-colors duration-200 focus:ring-1 focus:ring-[#0059FF]/30 focus:border-[#0059FF]/50 disabled:opacity-60"
+                    autoComplete="email"
+                    autoFocus
+                    className={`mt-5 w-full rounded-xl border px-4 text-[13.5px] outline-none transition-colors duration-200 disabled:opacity-60 ${
+                      isDark
+                        ? 'placeholder:text-white/30 text-white'
+                        : 'placeholder:text-black/30'
+                    }`}
                     style={{
-                      backgroundColor: 'var(--av-input-bg)',
-                      borderColor: error ? 'rgba(239,68,68,0.6)' : 'var(--av-input-border)',
-                      color: 'var(--av-text-1)',
+                      height: 44,
+                      background: isDark ? '#0F0F0F' : '#F5F5F5',
+                      color: isDark ? '#ffffff' : '#111111',
+                      borderColor: error
+                        ? 'rgba(239,68,68,0.55)'
+                        : isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)',
+                      boxShadow: error
+                        ? 'none'
+                        : isDark
+                        ? 'inset 0 1px 0 rgba(255,255,255,0.02)'
+                        : 'inset 0 1px 2px rgba(0,0,0,0.04)',
+                    }}
+                    onFocus={(e) => {
+                      if (!error) {
+                        e.currentTarget.style.borderColor = 'rgba(62,109,242,0.55)'
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(62,109,242,0.18)'
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = error
+                        ? 'rgba(239,68,68,0.55)'
+                        : isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)'
+                      e.currentTarget.style.boxShadow = error
+                        ? 'none'
+                        : isDark
+                        ? 'inset 0 1px 0 rgba(255,255,255,0.02)'
+                        : 'inset 0 1px 2px rgba(0,0,0,0.04)'
                     }}
                   />
 
@@ -140,8 +210,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mt-2 text-[12px]"
-                        style={{ color: '#ef4444' }}
+                        className="mt-2 text-[12px] text-red-400"
                       >
                         {error}
                       </motion.p>
@@ -149,40 +218,84 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                   </AnimatePresence>
 
                   <motion.button
-                    whileHover={submitting ? undefined : { scale: 1.02, filter: 'brightness(1.06)' }}
-                    whileTap={submitting ? undefined : { scale: 0.97 }}
-                    onClick={() => { if (!submitting) submit() }}
+                    whileTap={submitting ? undefined : { scale: 0.98 }}
+                    onClick={() => {
+                      if (!submitting) submit()
+                    }}
                     disabled={!email || submitting}
-                    className="mt-3 w-full rounded-2xl py-3 text-[13px] font-semibold text-white disabled:opacity-40 transition-[filter] duration-150"
+                    className="mt-4 w-full inline-flex items-center justify-center rounded-full text-[14px] font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-150 cursor-pointer"
                     style={{
-                      fontFamily: 'var(--font-albert-sans)',
-                      background: 'linear-gradient(to bottom, #0059FF 0%, #0059FF 100%)',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.32), 0 4px 18px rgba(0,89,255,0.42)',
-                      border: '1px solid rgba(0,0,0,0.12)',
+                      height: 44,
+                      background: 'linear-gradient(180deg, #5B85FF 0%, #2D54E0 100%)',
+                      boxShadow:
+                        '0 6px 16px -4px rgba(45,84,224,0.45), 0 1px 2px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.18)',
                     }}
                   >
                     {submitting ? 'Joining…' : 'Notify me'}
                   </motion.button>
 
-                  <p style={{ color: 'var(--av-text-2)' }} className="mt-3 text-center text-[11px]">
-                    No spam. We'll only email you when access opens.
+                  <p
+                    className="mt-3 text-center text-[11.5px]"
+                    style={{ color: isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.40)' }}
+                  >
+                    No spam. We&apos;ll only email you when access opens.
                   </p>
                 </>
               ) : (
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center py-4 text-center"
+                  className="flex flex-col items-center py-2 text-center"
                 >
-                  <div className="mb-4 flex size-10 items-center justify-center rounded-full" style={{ background: 'rgba(0,89,255,0.18)' }}>
-                    <span className="text-lg">✦</span>
+                  <div
+                    className="mb-4 grid place-items-center rounded-full"
+                    style={{
+                      width: 44,
+                      height: 44,
+                      background: 'rgba(62,109,242,0.14)',
+                      border: '1px solid rgba(62,109,242,0.35)',
+                    }}
+                  >
+                    <Check size={20} strokeWidth={2.4} className="text-[#5B85FF]" />
                   </div>
-                  <h2 style={{ fontFamily: 'var(--font-syne)', color: 'var(--av-text-1)' }} className="text-[16px] font-bold">
-                    You're on the list
+                  <h2
+                    className="text-[17px] font-semibold"
+                    style={{ letterSpacing: '-0.01em', color: isDark ? '#ffffff' : '#111111' }}
+                  >
+                    {alreadyJoined ? "You're already on the list" : "You're on the list"}
                   </h2>
-                  <p style={{ color: 'var(--av-text-2)' }} className="mt-2 text-[13px] leading-relaxed">
-                    We'll reach out to <span style={{ color: 'var(--av-text-1)', opacity: 0.7 }}>{email}</span> when Avora is ready.
+                  <p
+                    className="mt-2 text-[13.5px] leading-relaxed max-w-[280px]"
+                    style={{ color: isDark ? 'rgba(255,255,255,0.55)' : '#5A5856' }}
+                  >
+                    {alreadyJoined ? (
+                      <>
+                        We already have{' '}
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.85)' : '#111111' }}>{email}</span>.{' '}
+                        We&apos;ll reach out as soon as Avora opens.
+                      </>
+                    ) : (
+                      <>
+                        We&apos;ll reach out to{' '}
+                        <span style={{ color: isDark ? 'rgba(255,255,255,0.85)' : '#111111' }}>{email}</span>{' '}
+                        the moment Avora is ready.
+                      </>
+                    )}
                   </p>
+                  <button
+                    onClick={onClose}
+                    className={`mt-5 inline-flex items-center justify-center rounded-full px-5 text-[13px] font-medium transition-colors cursor-pointer ${
+                      isDark
+                        ? 'text-white/80 hover:bg-white/[0.06] hover:text-white'
+                        : 'text-black/60 hover:bg-black/[0.05] hover:text-black'
+                    }`}
+                    style={{
+                      height: 36,
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+                    }}
+                  >
+                    Close
+                  </button>
                 </motion.div>
               )}
             </div>
