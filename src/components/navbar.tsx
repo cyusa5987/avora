@@ -116,11 +116,22 @@ export function Navbar({ onOpenModal, onOpenPricing }: NavbarProps) {
             onClick={(e) => {
               if (pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }
             }}
-            className="inline-flex items-center transition-opacity duration-200 hover:opacity-75 px-1"
+            className="inline-flex items-center gap-2 transition-opacity duration-200 hover:opacity-80 px-1"
           >
+            {/* Logo mark */}
             <span
-              className="text-[14px] tracking-tight"
-              style={{ fontFamily: 'var(--font-syne)', color: 'rgba(255,255,255,0.65)' }}
+              className="grid place-items-center rounded-[7px] flex-shrink-0"
+              style={{ width: 24, height: 24, background: 'linear-gradient(135deg, #5B85FF 0%, #2D54E0 100%)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path d="M3.5 13L8 4L12.5 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="5.2" y1="10" x2="10.8" y2="10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </span>
+            {/* Wordmark */}
+            <span
+              className="text-[15px] font-semibold"
+              style={{ fontFamily: 'var(--font-syne)', color: '#ffffff', letterSpacing: '-0.01em' }}
             >
               avora
             </span>
