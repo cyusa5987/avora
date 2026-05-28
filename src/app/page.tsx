@@ -240,7 +240,7 @@ export default function Home() {
       />
 
       {/* ── Hero ── */}
-      <main className="flex flex-col items-center px-6 pt-36 pb-20">
+      <main className="flex flex-col items-center px-6 pt-44 pb-20">
 
         {/* Headline */}
         <motion.h1
@@ -249,11 +249,11 @@ export default function Home() {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-3xl"
           style={{
-            fontFamily: SF,
-            fontWeight: 800,
-            fontSize: 'clamp(44px, 7.5vw, 96px)',
+            fontFamily: '"Instrument Serif", Georgia, serif',
+            fontWeight: 400,
+            fontSize: 'clamp(48px, 7.5vw, 96px)',
             lineHeight: 1.04,
-            letterSpacing: '-0.035em',
+            letterSpacing: '-0.02em',
             color: '#ffffff',
           }}
         >
